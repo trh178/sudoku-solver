@@ -1,16 +1,41 @@
 import Data.Char (digitToInt)
 import Data.List
 
+
 --type Solution = [Int]
 type Possibility = [Int]
 type Row = [Possibility]
+type Col = [Possibility]
+type Box = [Possibility]
 type Board = [Possibility] 
 
---rowSweep :: Row -> Row
 
---colSweep :: Board -> Board
+-- HELPERS
+everyf :: Int -> [a] -> [a]
+everyf n [] = []
+everyf n as = head as : everyf n (drop n as)
+every n k = everyf n . drop (k-1)
 
---boxSweep :: Board -> Board
+
+-- MODULE FUNCTIONS
+
+extractRow :: Board -> Int -> Row
+extractRow b i = take 9 $ drop (i - 1) $ b
+
+extractCol :: Board -> Int -> Col
+extractCol = undefined
+
+extractBox :: Board -> Int -> Box
+extractBox = undefined
+
+rowSweep :: Row -> Row
+rowSweep = undefined
+
+colSweep :: Col -> Col
+colSweep = undefined
+
+boxSweep :: Box -> Box
+boxSweep = undefined
 
 checkRows :: Board -> Board
 checkRows [] = []
@@ -37,13 +62,17 @@ populateBoard (b:bs) (s:ss)
   | cell > 0 = [digitToInt s] : populateBoard bs ss 
   | otherwise = b : populateBoard bs ss
   where cell = digitToInt s
-    
+
+
+-- MAIN
 main :: IO ()
 main = do
   lines <- sequence $ take 9 $ repeat getLine
   let board = populateBoard initBoard (concat lines)
   let solution = solveBoard board
-
+  let list = every 9 2 [1..81]
+  
   print board
+  print list
   
 
