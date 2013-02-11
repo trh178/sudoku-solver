@@ -3,17 +3,29 @@ import Data.List
 
 --type Solution = [Int]
 type Possibility = [Int]
+type Row = [Possibility]
 type Board = [Possibility] 
 
---rowSweep :: Board -> Board
+--rowSweep :: Row -> Row
 
 --colSweep :: Board -> Board
 
 --boxSweep :: Board -> Board
 
---solutionUpdate :: Board -> Solution
+checkRows :: Board -> Board
+checkRows [] = []
+checkRows (r:rs) = undefined
 
---solutionCheck :: Solution -> Bool
+finished :: Board -> Bool
+finished [] = True
+finished (b:bs)
+  | length b > 1 = False
+  | otherwise = finished bs
+
+solveBoard :: Board -> Board
+solveBoard b
+  | finished b = b
+  | otherwise = checkRows b
 
 initBoard :: Board
 initBoard = take 81 $ repeat $ [1..9]
@@ -30,6 +42,7 @@ main :: IO ()
 main = do
   lines <- sequence $ take 9 $ repeat getLine
   let board = populateBoard initBoard (concat lines)
+  let solution = solveBoard board
 
   print board
   
