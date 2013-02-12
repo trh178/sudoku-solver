@@ -23,13 +23,15 @@ extractRow :: Board -> Int -> Row
 extractRow b i = take 9 $ drop (i - 1) $ b
 
 extractCol :: Board -> Int -> Col
-extractCol = undefined
+extractCol b i = every 9 i b
 
 extractBox :: Board -> Int -> Box
 extractBox = undefined
 
 rowSweep :: Row -> Row
-rowSweep = undefined
+rowSweep r =
+  let singles = concat $ filter (null . tail) r
+  in map (\x -> if length x > 1 then x \\ singles else x) r
 
 colSweep :: Col -> Col
 colSweep = undefined
@@ -39,7 +41,9 @@ boxSweep = undefined
 
 checkRows :: Board -> Board
 checkRows [] = []
-checkRows (r:rs) = undefined
+checkRows b = union (rowSweep r) (checkRows rs)
+          where r = take 9 b
+                rs = drop 9 b
 
 finished :: Board -> Bool
 finished [] = True
@@ -51,7 +55,7 @@ solveBoard :: Board -> Board
 solveBoard b
   | finished b = b
   | otherwise = checkRows b
-
+    
 initBoard :: Board
 initBoard = take 81 $ repeat $ [1..9]
 
@@ -70,9 +74,7 @@ main = do
   lines <- sequence $ take 9 $ repeat getLine
   let board = populateBoard initBoard (concat lines)
   let solution = solveBoard board
-  let list = every 9 2 [1..81]
   
   print board
-  print list
   
 
