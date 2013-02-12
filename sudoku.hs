@@ -14,9 +14,9 @@ everyf n [] = []
 everyf n as = head as : everyf n (drop n as)
 every n k = everyf n . drop (k-1)
 
-teveryf :: Int -> [a] -> [a]
+teveryf :: (Eq a) => Int -> [a] -> [a]
 teveryf n [] = []
-teveryf n as = union (take 3 as) (teveryf n (drop n as))
+teveryf n as = (take 3 as) ++ (teveryf n (drop n as))
 tevery n k = teveryf n . drop (k - 1)
 
 
@@ -36,13 +36,13 @@ s_transpose :: Board -> Board
 s_transpose b = helper b 1
     where helper b i
             | i > 9 = []
-            | otherwise = union (extractCol b i) (helper b (i + 1))
+            | otherwise = (extractCol b i) ++ (helper b (i + 1))
 
 s_btransform :: Board -> Board
 s_btransform b = helper b 1
     where helper b i
              | i > 9 = []
-             | otherwise = union (extractBox b i) (helper b (i + 1))
+             | otherwise = (extractBox b i) ++ (helper b (i + 1))
 
 sweep :: Region -> Region
 sweep r =
@@ -57,7 +57,7 @@ finished (b:bs)
 
 checkRows :: Board -> Board
 checkRows [] = []
-checkRows b = union (sweep r) (checkRows rs)
+checkRows b = (sweep r) ++ (checkRows rs)
     where r = take 9 b
           rs = drop 9 b
 
@@ -92,6 +92,6 @@ main = do
   let board = populateBoard initBoard (concat lines)
   let solution = solveBoard (cycle [checkRows, checkCols, checkBoxes]) finished board
   
-  print board
+  print solution
   
 
