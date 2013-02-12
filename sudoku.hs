@@ -1,12 +1,9 @@
 import Data.Char (digitToInt)
 import Data.List
 
-
---type Solution = [Int]
 type Possibility = [Int]
 type Region = [Possibility]
 type Board = [Possibility] 
-
 
 -- HELPERS
 everyf :: Int -> [a] -> [a]
@@ -18,7 +15,6 @@ teveryf :: (Eq a) => Int -> [a] -> [a]
 teveryf n [] = []
 teveryf n as = (take 3 as) ++ (teveryf n (drop n as))
 tevery n k = teveryf n . drop (k - 1)
-
 
 -- MODULE FUNCTIONS
 
@@ -84,14 +80,11 @@ populateBoard (b:bs) (s:ss)
     | otherwise = b : populateBoard bs ss
     where cell = digitToInt s
 
-
 -- MAIN
 main :: IO ()
 main = do
   lines <- sequence $ take 9 $ repeat getLine
   let board = populateBoard initBoard (concat lines)
   let solution = solveBoard (cycle [checkRows, checkCols, checkBoxes]) finished board
-  
-  print solution
-  
+  mapM_ print $ map (extractRow solution) [1..9]
 
