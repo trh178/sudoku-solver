@@ -86,14 +86,7 @@ main = do
   lines <- sequence $ take 9 $ repeat getLine
   let board = populateBoard initBoard (concat lines)
   let solution = solveBoard (cycle [checkRows, checkCols, checkBoxes]) finished board
-
-  print $ concat $ extractRow solution 1
-  print $ concat $ extractRow solution 2
-  print $ concat $ extractRow solution 3
-  print $ concat $ extractRow solution 4
-  print $ concat $ extractRow solution 5
-  print $ concat $ extractRow solution 6
-  print $ concat $ extractRow solution 7
-  print $ concat $ extractRow solution 8
-  print $ concat $ extractRow solution 9
+  let rows = map (concat . extractRow solution) [1..9]
+  let rowStrs = [map show x ++ ["\n"] | x <- rows]
+  mapM_ (mapM_ putStr) rowStrs
 
