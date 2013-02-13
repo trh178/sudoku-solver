@@ -63,10 +63,11 @@ checkCols = s_transpose . checkRows . s_transpose
 checkBoxes :: Board -> Board
 checkBoxes = s_btransform . checkRows . s_btransform
 
-solveBoard :: [(Board -> Board)] -> (Board -> Bool) -> Board -> Board
-solveBoard (f:fs) term board
+solveBoard :: (Board -> Board) -> (Board -> Bool) -> Board -> Board
+solveBoard f term board
+    | (board == nextBoard) = board
     | term nextBoard = nextBoard
-    | otherwise = solveBoard fs term nextBoard
+    | otherwise = solveBoard f term nextBoard
     where nextBoard = f board
 
 initBoard :: Board
@@ -85,7 +86,7 @@ main :: IO ()
 main = do
   lines <- sequence $ take 9 $ repeat getLine
   let board = populateBoard initBoard (concat lines)
-  let solution = solveBoard (cycle [checkRows, checkCols, checkBoxes]) finished board
+  let solution = solveBoard (checkRows . checkCols . checkBoxes) finished board
   let rows = map (concat . extractRow solution) [1..9]
   let rowStrs = [map show x ++ ["\n"] | x <- rows]
   mapM_ (mapM_ putStr) rowStrs
