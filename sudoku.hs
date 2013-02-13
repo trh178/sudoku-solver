@@ -19,7 +19,7 @@ tevery n k = teveryf n . drop (k - 1)
 -- MODULE FUNCTIONS
 
 extractRow :: Board -> Int -> Region
-extractRow b i = take 9 $ drop (i - 1) $ b
+extractRow b i = take 9 $ drop ((i-1) * 9) $ b
 
 extractCol :: Board -> Int -> Region
 extractCol b i = every 9 i b
@@ -86,5 +86,14 @@ main = do
   lines <- sequence $ take 9 $ repeat getLine
   let board = populateBoard initBoard (concat lines)
   let solution = solveBoard (cycle [checkRows, checkCols, checkBoxes]) finished board
-  mapM_ print $ map (extractRow solution) [1..9]
+
+  print $ concat $ extractRow solution 1
+  print $ concat $ extractRow solution 2
+  print $ concat $ extractRow solution 3
+  print $ concat $ extractRow solution 4
+  print $ concat $ extractRow solution 5
+  print $ concat $ extractRow solution 6
+  print $ concat $ extractRow solution 7
+  print $ concat $ extractRow solution 8
+  print $ concat $ extractRow solution 9
 
