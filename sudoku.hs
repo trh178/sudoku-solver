@@ -55,6 +55,15 @@ usweep r
           new = concat $ uniques \\ singles
           b = break (elem $ head new) r
 
+ecsweep :: Region -> Region
+ecsweep r
+    | null ks = r
+    | otherwise = (fst b) ++ (filter (== head ks) $ head $ snd b) : (tail $ snd b)
+    where ns = filter (not . null . tail) r
+          ecs = filter ((==4) . length) $ map (foldl union []) $ filter ((==4) . length) $ subsequences ns
+          ks = concat $ filter ((==1) . length) $ map (filter (\x -> not $ elem x $ concat ecs)) ns
+          b = break (elem $ head ks) r
+
 finished :: Board -> Bool
 finished [] = True
 finished (b:bs)
