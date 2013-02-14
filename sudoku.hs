@@ -45,6 +45,16 @@ sweep r =
     let singles = concat $ filter (null . tail) r
     in map (\x -> if length x > 1 then x \\ singles else x) r
 
+usweep :: Region -> Region
+usweep r
+    | null new = r
+    | otherwise = (fst b) ++ (filter (== head new) $ head $ snd b) : (tail $ snd b)
+    where rots = init (zipWith (++) (tails r) (inits r))
+          uniques = filter (not . null) $ [foldl (\\) (head lst) (tail lst) | lst <- rots]
+          singles = filter (null . tail) r
+          new = concat $ uniques \\ singles
+          b = break (elem $ head new) r
+
 finished :: Board -> Bool
 finished [] = True
 finished (b:bs)
@@ -53,7 +63,7 @@ finished (b:bs)
 
 checkRows :: Board -> Board
 checkRows [] = []
-checkRows b = (sweep r) ++ (checkRows rs)
+checkRows b = ((usweep . sweep) r) ++ (checkRows rs)
     where r = take 9 b
           rs = drop 9 b
 
@@ -88,6 +98,5 @@ main = do
   let board = populateBoard initBoard (concat lines)
   let solution = solveBoard (checkRows . checkCols . checkBoxes) finished board
   let rows = map (concat . extractRow solution) [1..9]
-  let rowStrs = [map show x ++ ["\n"] | x <- rows]
-  mapM_ (mapM_ putStr) rowStrs
-
+  mapM_ (putStrLn . concatMap show) rows
+  
