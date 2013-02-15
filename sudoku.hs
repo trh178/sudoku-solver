@@ -56,11 +56,18 @@ usweep r
           b = break (elem $ head new) r
 
 ecsweep :: Region -> Region
-ecsweep r
+ecsweep r = helper r start
+    where start = 9 - (length $ filter (null . tail) r) - 1
+          helper r s
+              | s < 2 = r
+              | otherwise = helper (ecsweepk r s) (s - 1)
+
+ecsweepk :: Region -> Int -> Region
+ecsweepk r k
     | null ks = r
     | otherwise = (fst b) ++ (filter (== head ks) $ head $ snd b) : (tail $ snd b)
     where ns = filter (not . null . tail) r
-          ecs = filter ((==4) . length) $ map (foldl union []) $ filter ((==4) . length) $ subsequences ns
+          ecs = filter ((==k) . length) $ map (foldl union []) $ filter ((==k) . length) $ subsequences ns
           ks = concat $ filter ((==1) . length) $ map (filter (\x -> not $ elem x $ concat ecs)) ns
           b = break (elem $ head ks) r
 
@@ -82,9 +89,27 @@ checkCols = s_transpose . checkRows . s_transpose
 checkBoxes :: Board -> Board
 checkBoxes = s_btransform . checkRows . s_btransform
 
+ecSweepRows :: Board -> Board
+ecSweepRows [] = []
+ecSweepRows b = (ecsweep r) ++ (ecSweepRows rs)
+    where r = take 9 b
+          rs = drop 9 b
+
+ecSweepCols :: Board -> Board
+ecSweepCols = s_transpose . ecSweepRows . s_transpose
+
+ecSweepBoxes :: Board -> Board
+ecSweepBoxes = s_btransform . ecSweepRows . s_btransform
+
+solveBoardLvl2 :: (Board -> Board) -> (Board -> Bool) -> Board -> Board
+solveBoardLvl2 f term board
+    | (board == nextBoard) = board
+    | otherwise = solveBoard f term nextBoard
+    where nextBoard = ecSweepRows board
+
 solveBoard :: (Board -> Board) -> (Board -> Bool) -> Board -> Board
 solveBoard f term board
-    | (board == nextBoard) = board
+    | (board == nextBoard) = solveBoardLvl2 f term nextBoard
     | term nextBoard = nextBoard
     | otherwise = solveBoard f term nextBoard
     where nextBoard = f board
