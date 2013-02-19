@@ -8,8 +8,8 @@ data Cell = Undecided [Int]
 type Region = [Cell]
 type Board = [Cell] 
 
-boardShow (Undecided _) = show 0
-boardShow (Decided v) = show v
+cellShow (Undecided _) = show 0
+cellShow (Decided v) = show v
 
 decided :: Cell -> Bool
 decided (Decided _) = True
@@ -132,17 +132,13 @@ ecSweepCols = s_transpose . ecSweepRows . s_transpose
 ecSweepBoxes :: Board -> Board
 ecSweepBoxes = s_btransform . ecSweepRows . s_btransform
 
-solveBoardLvl2 :: (Board -> Board) -> (Board -> Bool) -> Board -> Board
-solveBoardLvl2 f term board
-    | (board == nextBoard) = board
-    | otherwise = solveBoard f term nextBoard
-    where nextBoard = ecSweepRows board
-
-solveBoard :: (Board -> Board) -> (Board -> Bool) -> Board -> Board
-solveBoard f term board
-    | (board == nextBoard) = solveBoardLvl2 f term nextBoard
+solveBoard :: [(Board -> Board)] -> (Board -> Bool) -> Int -> Board -> Board
+solveBoard flist@(f:fs) term round board
     | term nextBoard = nextBoard
-    | otherwise = solveBoard f term nextBoard
+    | round == 10 = board
+    | (board == nextBoard && round == 3) = solveBoard (ecSweepRows : ecSweepCols : ecSweepBoxes : fs) term (round+1) nextBoard
+    | (board == nextBoard) = solveBoard fs term (round+1) nextBoard
+    | otherwise = solveBoard fs term 1 nextBoard
     where nextBoard = f board
 
 initBoard :: Board
@@ -161,7 +157,7 @@ main :: IO ()
 main = do
   lines <- getLine
   let board = populateBoard initBoard lines
-  let solution = solveBoard (checkRows . checkCols . checkBoxes) finished board
+  let solution = solveBoard (cycle [checkRows, checkCols, checkBoxes]) finished 1 board
   let rows = map (extractRow solution) [1..9]
-  mapM_ (putStrLn . concatMap boardShow) rows
+  mapM_ (putStrLn . concatMap cellShow) rows
   
