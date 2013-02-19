@@ -128,8 +128,8 @@ populateBoard (b:bs) (s:ss)
 -- MAIN
 main :: IO ()
 main = do
-  lines <- sequence $ take 9 $ repeat getLine
-  let board = populateBoard initBoard (concat lines)
+  lines <- getLine
+  let board = populateBoard initBoard lines
   let solution = solveBoard (checkRows . checkCols . checkBoxes) finished board
   let rows = map (concat . extractRow solution) [1..9]
   mapM_ (putStrLn . concatMap show) rows
