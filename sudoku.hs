@@ -18,6 +18,10 @@ tevery n k = teveryf n . drop (k - 1)
 
 -- MODULE FUNCTIONS
 
+sanitizeRow :: Region -> Region
+sanitizeRow [] = []
+sanitizeRow (r:rs) = if length r > 0 then [[0]] else r : sanitizeRow rs
+
 extractRow :: Board -> Int -> Region
 extractRow b i = take 9 $ drop ((i-1) * 9) $ b
 
