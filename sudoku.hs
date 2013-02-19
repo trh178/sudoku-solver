@@ -1,9 +1,34 @@
 import Data.Char (digitToInt)
 import Data.List
-
-type Possibility = [Int]
+data Cell = Undecided [Int]
+          | Decided Int
+          deriving (Show, Eq)
+type Possibility = Cell
 type Region = [Possibility]
 type Board = [Possibility] 
+
+
+decided :: Cell -> Bool
+decided (Decided _) = True
+decided _ = False
+
+fromCell :: Cell -> [Int]
+fromCell (Undecided xs) = xs
+fromCell (Decided x) = [x]
+
+toCell :: [Int] -> Cell
+toCell [] = error "toCell: Attempt to create empty cell."
+toCell [x] = Decided x
+toCell xs = Undecided xs
+
+prune :: [Int] -> Cell -> Cell
+prune ss (Undecided xs)
+    | null ns = error "prune: Attempt to create empty cell."
+    | null (tail ns) = Decided (head ns)
+    | otherwise = Undecided ns
+    where
+        ns = xs \\ ss
+prune _ d@(Decided _) = d
 
 -- HELPERS
 everyf :: Int -> [a] -> [a]
@@ -42,22 +67,25 @@ s_btransform b = helper b 1
 
 sweep :: Region -> Region
 sweep r =
-    let singles = concat $ filter (null . tail) r
-    in map (\x -> if length x > 1 then x \\ singles else x) r
+    let singles = concatMap fromCell $ filter decided r
+    in map (prune singles) r
+
+repetition :: ([[Int]], [[Int]]) -> [Int] -> [[Int]]
+repetition b new = (fst b) ++ (filter (== head new) $ head $ snd b) : (tail $ snd b)
 
 usweep :: Region -> Region
 usweep r
     | null new = r
-    | otherwise = (fst b) ++ (filter (== head new) $ head $ snd b) : (tail $ snd b)
+    | otherwise = map toCell $ repetition b new
     where rots = init (zipWith (++) (tails r) (inits r))
-          uniques = filter (not . null) $ [foldl (\\) (head lst) (tail lst) | lst <- rots]
-          singles = filter (null . tail) r
-          new = concat $ uniques \\ singles
-          b = break (elem $ head new) r
+          uniques = filter (not . null) $ [foldl (\\) (head lst) (tail lst) | lst <- map (map fromCell) rots]
+          singles = filter decided r
+          new = concat $ uniques \\ map fromCell singles
+          b = break (elem $ head new) $ map fromCell r
 
 ecsweep :: Region -> Region
 ecsweep r = helper r start
-    where start = 9 - (length $ filter (null . tail) r) - 1
+    where start = 9 - (length $ filter decided r) - 1
           helper r s
               | s < 2 = r
               | otherwise = helper (ecsweepk r s) (s - 1)
@@ -65,16 +93,16 @@ ecsweep r = helper r start
 ecsweepk :: Region -> Int -> Region
 ecsweepk r k
     | null ks = r
-    | otherwise = (fst b) ++ (filter (== head ks) $ head $ snd b) : (tail $ snd b)
-    where ns = filter (not . null . tail) r
-          ecs = filter ((==k) . length) $ map (foldl union []) $ filter ((==k) . length) $ subsequences ns
-          ks = concat $ filter ((==1) . length) $ map (filter (\x -> not $ elem x $ concat ecs)) ns
-          b = break (elem $ head ks) r
+    | otherwise = map toCell $ repetition b ks
+    where ns = filter (not . decided) r
+          ecs = filter ((==k) . length) $ map (foldl union []) $ filter ((==k) . length) $ subsequences $ map fromCell ns
+          ks = concat $ filter ((==1) . length) $ map (filter (\x -> not $ elem x $ concat ecs)) $ map fromCell ns
+          b = break (elem $ head ks) $ map fromCell r
 
 finished :: Board -> Bool
 finished [] = True
 finished (b:bs)
-    | length b > 1 = False
+    | not (decided b) = False
     | otherwise = finished bs
 
 checkRows :: Board -> Board
@@ -115,13 +143,13 @@ solveBoard f term board
     where nextBoard = f board
 
 initBoard :: Board
-initBoard = take 81 $ repeat $ [1..9]
+initBoard = take 81 $ repeat $ Undecided [1..9]
 
 populateBoard :: Board -> String -> Board
 populateBoard [] _ = []
 populateBoard _ [] = []
 populateBoard (b:bs) (s:ss)
-    | cell > 0 = [digitToInt s] : populateBoard bs ss 
+    | cell > 0 = Decided (digitToInt s) : populateBoard bs ss 
     | otherwise = b : populateBoard bs ss
     where cell = digitToInt s
 
@@ -131,6 +159,6 @@ main = do
   lines <- getLine
   let board = populateBoard initBoard lines
   let solution = solveBoard (checkRows . checkCols . checkBoxes) finished board
-  let rows = map (concat . extractRow solution) [1..9]
+  let rows = map (concat . map fromCell . extractRow solution) [1..9]
   mapM_ (putStrLn . concatMap show) rows
   
