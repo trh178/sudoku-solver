@@ -3,7 +3,7 @@ import Data.List
 
 data Cell = Undecided [Int]
           | Decided Int
-          deriving (Eq)
+          deriving (Show, Eq)
 
 type Region = [Cell]
 type Board = [Cell] 
@@ -45,10 +45,6 @@ teveryf n as = (take 3 as) ++ (teveryf n (drop n as))
 tevery n k = teveryf n . drop (k - 1)
 
 -- MODULE FUNCTIONS
-
-sanitizeRow :: Region -> Region
-sanitizeRow [] = []
-sanitizeRow (r:rs) = if length r > 0 then [[0]] else r : sanitizeRow rs
 
 extractRow :: Board -> Int -> Region
 extractRow b i = take 9 $ drop ((i-1) * 9) $ b
