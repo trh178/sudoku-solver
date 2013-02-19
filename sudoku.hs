@@ -1,12 +1,15 @@
 import Data.Char (digitToInt)
 import Data.List
+
 data Cell = Undecided [Int]
           | Decided Int
-          deriving (Show, Eq)
-type Possibility = Cell
-type Region = [Possibility]
-type Board = [Possibility] 
+          deriving (Eq)
 
+type Region = [Cell]
+type Board = [Cell] 
+
+boardShow (Undecided _) = show 0
+boardShow (Decided v) = show v
 
 decided :: Cell -> Bool
 decided (Decided _) = True
@@ -159,6 +162,6 @@ main = do
   lines <- getLine
   let board = populateBoard initBoard lines
   let solution = solveBoard (checkRows . checkCols . checkBoxes) finished board
-  let rows = map (concat . map fromCell . extractRow solution) [1..9]
-  mapM_ (putStrLn . concatMap show) rows
+  let rows = map (extractRow solution) [1..9]
+  mapM_ (putStrLn . concatMap boardShow) rows
   
