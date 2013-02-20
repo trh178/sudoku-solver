@@ -95,12 +95,11 @@ ecsweep r = helper r start
 
 ecsweepk :: Region -> Int -> Region
 ecsweepk r k
-    | null ks = r
-    | otherwise = map toCell $ repetition b ks
-    where ns = filter (not . decided) r
+    | null ecs = r
+    | otherwise = map toCell $ [if (x \\ (head ecs) == []) then x else (x \\ (head ecs)) | x <- riq]
+    where riq = map fromCell r
+          ns = filter (not . decided) r
           ecs = filter ((==k) . length) $ map (foldl union []) $ filter ((==k) . length) $ subsequences $ map fromCell ns
-          ks = concat $ filter ((==1) . length) $ map (filter (\x -> not $ elem x $ concat ecs)) $ map fromCell ns
-          b = break (elem $ head ks) $ map fromCell r
 
 finished :: Board -> Bool
 finished [] = True
