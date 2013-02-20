@@ -164,7 +164,7 @@ main :: IO ()
 main = do
   args <- getArgs
   line <- case args of
-    (file, n) -> readNthLineOfFile file $ read n
+    [file, n] -> readNthLineOfFile file $ read n
     _ -> getLine
 
   let board = populateBoard initBoard line
