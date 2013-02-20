@@ -1,4 +1,5 @@
 import Data.Char (digitToInt)
+import System.Environment (getArgs)
 import Data.List
 
 data Cell = Undecided [Int]
@@ -151,11 +152,22 @@ populateBoard (b:bs) (s:ss)
     | otherwise = b : populateBoard bs ss
     where cell = digitToInt s
 
+readNthLineOfFile :: String -> Int -> IO String
+readNthLineOfFile filename line = do
+  contents <- readFile filename
+  return $ case drop (line - 1) $ lines contents of
+    [] -> take 81 $ repeat '0'
+    l:_ -> l
+
 -- MAIN
 main :: IO ()
 main = do
-  lines <- getLine
-  let board = populateBoard initBoard lines
+  args <- getArgs
+  line <- case args of
+    (file, n) -> readNthLineOfFile file $ read n
+    _ -> getLine
+
+  let board = populateBoard initBoard line
   let solution = solveBoard (cycle [checkRows, checkCols, checkBoxes]) finished 1 board
   let rows = map (extractRow solution) [1..9]
   mapM_ (putStrLn . concatMap cellShow) rows
