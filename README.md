@@ -23,14 +23,14 @@ I wanted to try an approach more like a human would think about solving a sudoku
 
 Clone the repo.  Make sure you have GHC 7.4.2 installed (haven't checked it with newer versions yet).  In the cloned directory, do one of th following: 
 
-    runhaskell sudoku.hs < puzzle1
-    runhaskell sudoku.hs < puzzle1 > out
+    runhaskell sudoku.hs solve < puzzle1
+    runhaskell sudoku.hs solve < puzzle1 > out
     diff out solution1
 
 *OR*
 
-    runhaskell sudoku.hs puzzle-pool 1
-    runhaskell sudoku.hs puzzle-pool 5
+    runhaskell sudoku.hs solve 1
+    runhaskell sudoku.hs solve 5
 
 
 Questions/Comments/Concerns, just ask!

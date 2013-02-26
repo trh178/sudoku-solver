@@ -1,5 +1,6 @@
 import Data.Char (digitToInt)
 import System.Environment (getArgs)
+import System.Exit
 import Data.List
 
 data Cell = Undecided [Int]
@@ -161,14 +162,24 @@ readNthLineOfFile filename line = do
 
 -- MAIN
 main :: IO ()
-main = do
-  args <- getArgs
-  line <- case args of
-    [file, n] -> readNthLineOfFile file $ read n
-    _ -> getLine
+main = getArgs >>= parse >>= putStr
 
+parse ["solve"]    = getLine >>= solve >> exit
+parse ["solve", n] = (readNthLineOfFile "puzzle-pool" $ read n) >>= solve >> exit
+parse ["generate"] = generate >> exit
+parse ["help"]     = usage    >> exit
+parse ["version"]  = version  >> exit
+parse []           = usage    >> exit
+
+usage    = putStrLn "Usage: runhaskell sudoku.hs [help|version|solve|generate]\n\nsolve: < in a pizzle\nsolve n: puzzle from puzzle-pool\n"
+version  = putStrLn "Sudoku-Solver version 0.1"
+exit     = exitWith ExitSuccess
+die      = exitWith (ExitFailure 1)
+generate = putStrLn "*** generating placeholder ***"
+
+solve line =
   let board = populateBoard initBoard line
-  let solution = solveBoard (cycle [checkRows, checkCols, checkBoxes]) finished 1 board
-  let rows = map (extractRow solution) [1..9]
-  mapM_ (putStrLn . concatMap cellShow) rows
-  
+      solution = solveBoard (cycle [checkRows, checkCols, checkBoxes]) finished 1 board
+      rows = map (extractRow solution) [1..9]
+  in mapM_ (putStrLn . concatMap cellShow) rows >> putStrLn " -- Finished -- \n"
+
