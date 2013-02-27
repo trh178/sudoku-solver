@@ -2,6 +2,7 @@ import Data.Char (digitToInt)
 import System.Environment (getArgs)
 import System.Exit
 import Data.List
+import System.Random
 
 data Cell = Undecided [Int]
           | Decided Int
@@ -160,22 +161,27 @@ readNthLineOfFile filename line = do
     [] -> take 81 $ repeat '0'
     l:_ -> l
 
+readRandomLineOfFile :: String -> IO String
+readRandomLineOfFile filename = do
+  gen <- newStdGen
+  let ns = randoms gen :: [Int]
+  readNthLineOfFile filename (head ns `mod` 245)
+
 -- MAIN
 main :: IO ()
 main = getArgs >>= parse >>= putStr
 
 parse ["solve"]    = getLine >>= solve >> exit
 parse ["solve", n] = (readNthLineOfFile "puzzle-pool" $ read n) >>= solve >> exit
-parse ["generate"] = generate >> exit
+parse ["generate"] = (readRandomLineOfFile "puzzle-pool") >>= generate >> exit
 parse ["help"]     = usage    >> exit
 parse ["version"]  = version  >> exit
 parse []           = usage    >> exit
 
-usage    = putStrLn "Usage: runhaskell sudoku.hs [help|version|solve|generate]\n\nsolve: < in a pizzle\nsolve n: puzzle from puzzle-pool\n"
+usage    = putStrLn "Usage: runhaskell sudoku.hs [help|version|solve|generate]\n\nsolve: < in a puzzle\nsolve n: puzzle from puzzle-pool\n"
 version  = putStrLn "Sudoku-Solver version 0.1"
 exit     = exitWith ExitSuccess
 die      = exitWith (ExitFailure 1)
-generate = putStrLn "*** generating placeholder ***"
 
 solve line =
   let board = populateBoard initBoard line
@@ -183,3 +189,7 @@ solve line =
       rows = map (extractRow solution) [1..9]
   in mapM_ (putStrLn . concatMap cellShow) rows >> putStrLn " -- Finished -- \n"
 
+generate line =
+  let board = populateBoard initBoard line
+      rows = map (extractRow board) [1..9]
+  in mapM_ (putStrLn . concatMap cellShow) rows >> putStrLn " -- Finished -- \n"
