@@ -51,5 +51,5 @@ executable sudoku
   
   -- Other library packages from which modules are imported.
   build-depends:       base ==4.6.*,
-                       random >= 1.0.1.1
-  
+                       random >= 1.0.1.1,
+                       scotty >= 0.4.6
