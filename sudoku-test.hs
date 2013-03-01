@@ -1,0 +1,2 @@
+import Sudoku
+main = sudokuMain

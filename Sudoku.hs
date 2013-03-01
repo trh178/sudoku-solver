@@ -1,3 +1,5 @@
+module Sudoku (solve, generate, sudokuMain) where
+
 import Data.Char (digitToInt)
 import System.Environment (getArgs)
 import System.Exit
@@ -168,12 +170,12 @@ readRandomLineOfFile filename = do
   readNthLineOfFile filename (head ns `mod` 245)
 
 -- MAIN
-main :: IO ()
-main = getArgs >>= parse >>= putStr
+sudokuMain :: IO ()
+sudokuMain = getArgs >>= parse >>= putStr
 
 parse ["solve"]    = getLine >>= solve >> exit
-parse ["solve", n] = (readNthLineOfFile "puzzle-pool" $ read n) >>= solve >> exit
-parse ["generate"] = (readRandomLineOfFile "puzzle-pool") >>= generate >> exit
+parse ["solve", n] = (readNthLineOfFile "puzzles/puzzle-pool" $ read n) >>= solve >> exit
+parse ["generate"] = (readRandomLineOfFile "puzzles/puzzle-pool") >>= generate >> exit
 parse ["help"]     = usage    >> exit
 parse ["version"]  = version  >> exit
 parse []           = usage    >> exit
