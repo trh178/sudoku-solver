@@ -11,6 +11,7 @@ I wanted to try an approach more like a human would think about solving a sudoku
 - Solve boards requiring use of exact cover logic. (Usually considered 'intermediate')
 - Take input from standard in or from a list of puzzles in a file.
 - Output solved board
+- Generate basic random boards
 
 ## What I would like it to eventually do ##
 
@@ -21,16 +22,27 @@ I wanted to try an approach more like a human would think about solving a sudoku
 
 ## To use the program as it stands now ##
 
-Clone the repo.  Make sure you have GHC 7.4.2 installed (haven't checked it with newer versions yet).  In the cloned directory, do one of th following: 
+Clone the repo.  Make sure you have GHC 7.6.2 installed (haven't checked it with other versions yet).  In the cloned directory, do one of th following: 
 
-    runhaskell sudoku.hs solve < puzzle1
-    runhaskell sudoku.hs solve < puzzle1 > out
-    diff out solution1
+### solve puzzle from sample file (refer to puzzle1 for format) ###
+
+    runhaskell sudoku-test.hs solve < puzzles/sample-puzzles/puzzle1
+    runhaskell sudoku-test.hs solve < puzzles/sample-puzzles/puzzle1 > out
+    diff out puzzles/sample-solutions/solution1
 
 *OR*
 
-    runhaskell sudoku.hs solve 1
-    runhaskell sudoku.hs solve 5
+### solve puzzle that is already in the puzzle pool ###
 
+    runhaskell sudoku-test.hs solve 1
+    runhaskell sudoku-test.hs solve 5
+
+*OR*
+
+### generate random puzzle ###
+
+    runhaskell sudoku-test.hs generate
+
+*Lastly*
 
 Questions/Comments/Concerns, just ask!
