@@ -175,7 +175,7 @@ sudokuMain = getArgs >>= parse >>= putStr
 
 parse ["solve"]    = getLine >>= solve >> exit
 parse ["solve", n] = (readNthLineOfFile "puzzles/puzzle-pool" $ read n) >>= solve >> exit
-parse ["generate"] = (readRandomLineOfFile "puzzles/puzzle-pool") >>= generate >> exit
+parse ["generate"] = generate >> exit
 parse ["help"]     = usage    >> exit
 parse ["version"]  = version  >> exit
 parse []           = usage    >> exit
@@ -191,7 +191,9 @@ solve line =
       rows = map (extractRow solution) [1..9]
   in mapM_ (putStrLn . concatMap cellShow) rows >> putStrLn " -- Finished -- \n"
 
-generate line =
+generate = do
+  line <- (readRandomLineOfFile "puzzles/puzzle-pool")
   let board = populateBoard initBoard line
       rows = map (extractRow board) [1..9]
-  in mapM_ (putStrLn . concatMap cellShow) rows >> putStrLn " -- Finished -- \n"
+  mapM_ (putStrLn . concatMap cellShow) rows >> putStrLn " -- Finished -- \n"
+  
