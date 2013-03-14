@@ -18,5 +18,5 @@ main = scotty 3000 $ do
 
   get "/solve/:puzzle" $ do
     p <- param "puzzle"
-    html $ mconcat ["<h1>", p, "</h1>"]
+    json $ solve p
     

@@ -173,8 +173,8 @@ readRandomLineOfFile filename = do
 sudokuMain :: IO ()
 sudokuMain = getArgs >>= parse >>= putStr
 
-parse ["solve"]    = getLine >>= solve >> exit
-parse ["solve", n] = (readNthLineOfFile "puzzles/puzzle-pool" $ read n) >>= solve >> exit
+parse ["solve"]    = getLine >>= (return . solve) >>= putStrLn >> exit
+parse ["solve", n] = (readNthLineOfFile "puzzles/puzzle-pool" $ read n) >>= (return . solve) >>= putStrLn >> exit
 parse ["generate"] = generate >>= putStrLn >> exit
 parse ["help"]     = usage    >> exit
 parse ["version"]  = version  >> exit
@@ -185,11 +185,12 @@ version  = putStrLn "Sudoku-Solver version 0.1"
 exit     = exitWith ExitSuccess
 die      = exitWith (ExitFailure 1)
 
+solve :: String -> String
 solve line =
   let board = populateBoard initBoard line
       solution = solveBoard (cycle [checkRows, checkCols, checkBoxes]) finished 1 board
       rows = map (extractRow solution) [1..9]
-  in mapM_ (putStrLn . concatMap cellShow) rows >> putStrLn " -- Finished -- \n"
+  in concat $ map (concatMap cellShow) rows
 
 generate :: IO String
 generate = do
