@@ -12,13 +12,13 @@ I wanted to try an approach more like a human would think about solving a sudoku
 - Take input from standard in or from a list of puzzles in a file.
 - Output solved board
 - Generate basic random boards
+- Solve and generate puzzles through a web service.
 
 ## What I would like it to eventually do ##
 
 - Generate puzzles taking difficulty as parameter.
 - Output list of steps, along with solved board.
 - Add a chained logic heuristic to the solver. (Needed to solve 'difficult' puzzles)
-- Add web service to return generated puzzle, or solved puzzle with steps.
 
 ## To use the program as it stands now ##
 
@@ -42,6 +42,16 @@ Clone the repo.  Make sure you have GHC 7.6.2 installed (haven't checked it with
 ### generate random puzzle ###
 
     runhaskell sudoku-test.hs generate
+
+### to run the web services ### 
+
+    cabal build
+    ./dist/build/sudoku/sudoku
+
+There should now be a local server running on port 3000. Make the following example requests in a web browser:
+
+    <server ip>:3000/generate
+    <server ip>:3000/solve/<string representing puzzle> (e.g. the generated puzzle above)
 
 *Lastly*
 
