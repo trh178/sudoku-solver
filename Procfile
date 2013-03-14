@@ -1,1 +1,1 @@
-web: ./dist/build/sudoku/sudoku
+web: ./heroku-sudoku
