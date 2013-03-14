@@ -43,7 +43,7 @@ Clone the repo.  Make sure you have GHC 7.6.2 installed (haven't checked it with
 
     runhaskell sudoku-test.hs generate
 
-### to run the web services ### 
+### to run the web services 
 
     cabal build
     ./dist/build/sudoku/sudoku
