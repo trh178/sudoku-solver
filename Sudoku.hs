@@ -25,13 +25,13 @@ fromCell (Undecided xs) = xs
 fromCell (Decided x) = [x]
 
 toCell :: [Int] -> Cell
-toCell [] = error "toCell: Attempt to create empty cell."
+toCell [] = Decided 33
 toCell [x] = Decided x
 toCell xs = Undecided xs
 
 prune :: [Int] -> Cell -> Cell
 prune ss (Undecided xs)
-    | null ns = error "prune: Attempt to create empty cell."
+    | null ns = Decided 33
     | null (tail ns) = Decided (head ns)
     | otherwise = Undecided ns
     where
@@ -136,10 +136,40 @@ ecSweepCols = s_transpose . ecSweepRows . s_transpose
 ecSweepBoxes :: Board -> Board
 ecSweepBoxes = s_btransform . ecSweepRows . s_btransform
 
+-- really not too different from solveBoard. might be a way to DRY the code off here.
+-- this function takes a board and returns false if there is a contradiction
+findContradiction :: [(Board -> Board)] -> (Board -> Bool) -> Int -> Board -> Either Bool Board
+findContradiction flist@(f:fs) term round board
+    | ((>0) . length) $ filter (==Decided 33) nextBoard = Left False
+    | term nextBoard = Right nextBoard
+    | round == 10 = Right board
+    | (board == nextBoard && round == 3) = findContradiction (ecSweepRows : ecSweepCols : ecSweepBoxes : fs) term (round+1) nextBoard
+    | (board == nextBoard) = findContradiction fs term (round+1) nextBoard
+    | otherwise = findContradiction fs term 1 nextBoard
+    where nextBoard = f board
+
+guess :: Board -> Board
+guess b = takeWhile decided b ++ [toCell [head $ fromCell $ head $ dropWhile decided b]] ++ (tail $ dropWhile decided b)
+
+reduce :: Board -> Board
+reduce b = takeWhile decided b ++ [toCell $ tail $ fromCell $ head $ dropWhile decided b] ++ (tail $ dropWhile decided b)
+
+bruteForce :: Board -> Board
+bruteForce board =  
+  let reducedBoard = reduce board
+      guessBoard = guess board
+      contraBoard = findContradiction (cycle [checkRows, checkCols, checkBoxes]) finished 1 guessBoard
+  in case contraBoard of
+    Left bool -> bruteForce reducedBoard
+    Right b -> b                     
+
+-- takes a list of functions that operate on boards, a predicate to decide
+-- if we are done, a round counter to know how deep we are, and the current
+-- board. from this it solves and returns a board
 solveBoard :: [(Board -> Board)] -> (Board -> Bool) -> Int -> Board -> Board
 solveBoard flist@(f:fs) term round board
     | term nextBoard = nextBoard
-    | round == 10 = board
+    | round == 10 = bruteForce board
     | (board == nextBoard && round == 3) = solveBoard (ecSweepRows : ecSweepCols : ecSweepBoxes : fs) term (round+1) nextBoard
     | (board == nextBoard) = solveBoard fs term (round+1) nextBoard
     | otherwise = solveBoard fs term 1 nextBoard
