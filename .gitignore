@@ -4,3 +4,5 @@ out
 sudoku
 dist/
 
+.hsenv
+tags

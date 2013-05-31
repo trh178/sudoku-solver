@@ -53,4 +53,6 @@ executable sudoku
   build-depends:       base >= 4.5.0,
                        random >= 1.0.1.1,
                        scotty >= 0.4.6,
-                       mtl >= 2.1.2
+                       mtl >= 2.1.2,
+                       yices-easy,
+                       containers

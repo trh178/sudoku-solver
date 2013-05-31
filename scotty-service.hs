@@ -6,7 +6,9 @@ import Control.Monad.Trans
 import Control.Applicative ((<$>))
 import System.Environment (getEnv)
 
-main = do
+main = sudokuMain
+
+cmain = do
   port <- read <$> getEnv "PORT"
   scotty port $ do
 

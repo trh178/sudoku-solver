@@ -6,6 +6,12 @@ import System.Exit
 import Data.List
 import System.Random
 
+import qualified Yices.Easy as Y
+import Yices.Easy.Sugar
+import qualified Yices.Easy.Build as YB
+import Control.Monad ( forM_, liftM2, when )
+import qualified Data.Map as M
+
 data Cell = Undecided [Int]
           | Decided Int
           deriving (Show, Eq)
@@ -203,8 +209,8 @@ readRandomLineOfFile filename = do
 sudokuMain :: IO ()
 sudokuMain = getArgs >>= parse >>= putStr
 
-parse ["solve"]    = getLine >>= (return . solve) >>= putStrLn >> exit
-parse ["solve", n] = (readNthLineOfFile "puzzles/puzzle-pool" $ read n) >>= (return . solve) >>= putStrLn >> exit
+parse ["solve"]    = getLine >>= (runYices . parseBoard) >>= putStrLn >> exit
+parse ["solve", n] = (readNthLineOfFile "puzzles/puzzle-pool" $ read n) >>= (runYices . parseBoard) >>= putStrLn >> exit
 parse ["generate"] = generate >>= putStrLn >> exit
 parse ["help"]     = usage    >> exit
 parse ["version"]  = version  >> exit
@@ -222,6 +228,11 @@ solve line =
       rows = map (extractRow solution) [1..9]
   in concat $ map (concatMap cellShow) rows
 
+showBoard :: Board -> String
+showBoard b = intercalate ['\n'] $ map (concatMap cellShow) rows
+  where
+    rows = map (extractRow b) [1..9]
+
 generate :: IO String
 generate = do
   line <- (readRandomLineOfFile "puzzles/puzzle-pool")
@@ -229,3 +240,60 @@ generate = do
       rows = map (extractRow board) [1..9]
   return $ concat $ map (concatMap cellShow) rows 
   
+
+-- Yices based solver
+
+parseBoard :: String -> Board
+parseBoard = populateBoard initBoard
+
+runYices :: Board -> IO String
+runYices b = do
+    Y.Sat model <- Y.solve (yicesSolve b)
+    let soln c = case M.lookup (cell c) model of Just (Y.ValInt k) -> k
+        row i = map soln [(i, y) | y <- [0..8]]
+    return $ intercalate ['\n'] [concatMap show (row i) | i <- [0..8]]
+
+yicesSolve :: Board -> Y.Query
+yicesSolve b = YB.execBuild $ do
+  let cells = liftM2 (,) [0..8] [0..8]
+  forM_ (zip cells b) $ \(c, bc) -> do
+    x <- YB.declInt $ cell c
+    if (decided bc) then
+        YB.assert (x ==. fromIntegral (head (fromCell bc)))
+      else
+        YB.assert ((x >=. 1) &&. (x <=. 9))
+  forM_ cells $ \c@(x, y) -> do
+    let notEq c1 = YB.assert (Y.Var (cell c) /=. Y.Var (cell c1))
+        others = nub $ rowIndexes x y ++ colIndexes x y ++ boxIndexes x y
+    mapM_ notEq others
+
+cell :: (Int,Int) -> String
+cell (x,y) = concat ["c", show x, "_", show y]
+
+rowIndexes, colIndexes, boxIndexes   :: Int -> Int -> [(Int, Int)]
+rowIndexes x y = [(x, c) | c <- [0..8], c /= y]
+colIndexes x y = [(r, y) | r <- [0..8], r /= x]
+boxIndexes x y = [(r, c) | r <- rs, c <- cs, not $ r == x && c == y]
+  where
+    rs = [st..st+2]
+    cs = [cst..cst+2]
+    st = truncate (fromIntegral x / 3) * 3
+    cst = truncate (fromIntegral y / 3) * 3
+
+prepBoard :: Board -> [(Int, Int, Cell)]
+prepBoard b = [(i, j, possible c i j) | i <- [0..8], j <- [0..8], c <- b]
+  where
+    rows = [extractRow b i | i <- [1..9]] :: [[Cell]]
+    cols = [extractCol b i | i <- [1..9]]
+    boxes = [extractBox b i | i <- [1..9]]
+    rowI i j = truncate (fromIntegral i / 3 + fromIntegral j / 3)
+    possible d@(Decided _) _ _ = d
+    possible (Undecided _) i j = Undecided $ (([1..9] \\ decidedValues (rows !! i))
+                                                      \\ decidedValues (cols !! j))
+                                                      \\ decidedValues (boxes !! rowI i j)
+
+decidedValues :: [Cell] -> [Int]
+decidedValues = foldr extract []
+  where
+    extract (Decided x) xs = x:xs
+    extract (Undecided _) xs = xs
