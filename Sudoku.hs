@@ -280,20 +280,3 @@ boxIndexes x y = [(r, c) | r <- rs, c <- cs, not $ r == x && c == y]
     st = truncate (fromIntegral x / 3) * 3
     cst = truncate (fromIntegral y / 3) * 3
 
-prepBoard :: Board -> [(Int, Int, Cell)]
-prepBoard b = [(i, j, possible c i j) | i <- [0..8], j <- [0..8], c <- b]
-  where
-    rows = [extractRow b i | i <- [1..9]] :: [[Cell]]
-    cols = [extractCol b i | i <- [1..9]]
-    boxes = [extractBox b i | i <- [1..9]]
-    rowI i j = truncate (fromIntegral i / 3 + fromIntegral j / 3)
-    possible d@(Decided _) _ _ = d
-    possible (Undecided _) i j = Undecided $ (([1..9] \\ decidedValues (rows !! i))
-                                                      \\ decidedValues (cols !! j))
-                                                      \\ decidedValues (boxes !! rowI i j)
-
-decidedValues :: [Cell] -> [Int]
-decidedValues = foldr extract []
-  where
-    extract (Decided x) xs = x:xs
-    extract (Undecided _) xs = xs
